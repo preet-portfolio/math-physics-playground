@@ -1,0 +1,5 @@
+# Using pygame-ce (community edition, drop-in "import pygame" replacement):
+# plain pygame 2.6.1 has no prebuilt wheel for Python 3.14 yet and fails to
+# build from source without system SDL headers. pygame-ce ships a wheel.
+pygame-ce
+numpy
