@@ -17,10 +17,11 @@ import math
 
 import pygame
 
+from common import theme
 from common.scene import Scene
 from common.ui import Slider, draw_hud
 
-BACKGROUND = (10, 10, 12)
+BACKGROUND = theme.BOARD
 TRAIL_ALPHA = 25  # lower = longer-lived trail
 
 A_FREQ_RANGE = (1, 10)
@@ -42,7 +43,7 @@ class LissajousScene(Scene):
     def reset(self) -> None:
         self.t = 0.0
         self.last_point = None
-        self.font = pygame.font.SysFont("menlo,consolas,monospace", 16)
+        self.font = theme.mono_font(16)
 
         self.trail = pygame.Surface((self.width, self.height))
         self.trail.fill(BACKGROUND)
@@ -50,17 +51,13 @@ class LissajousScene(Scene):
         self.fade_overlay.fill(BACKGROUND)
         self.fade_overlay.set_alpha(TRAIL_ALPHA)
 
-        panel_size = (260, 214)
-        self.panel_surface = pygame.Surface(panel_size)
-        self.panel_surface.set_alpha(180)
-        self.panel_surface.fill((20, 20, 24))
-
-        self.sliders = [
-            Slider(20, 65, 230, *A_FREQ_RANGE, DEFAULT_A, "a  (x-frequency)", fmt="{:.0f}"),
-            Slider(20, 107, 230, *B_FREQ_RANGE, DEFAULT_B, "b  (y-frequency)", fmt="{:.0f}"),
-            Slider(20, 149, 230, *DELTA_RANGE, DEFAULT_DELTA, "delta  (phase, rad)", fmt="{:.2f}"),
-            Slider(20, 191, 230, *SPEED_RANGE, DEFAULT_SPEED, "speed", fmt="{:.2f}"),
-        ]
+        if not self.sliders:
+            self.sliders = [
+                Slider(20, 115, 230, *A_FREQ_RANGE, DEFAULT_A, "a  (x-frequency)", fmt="{:.0f}"),
+                Slider(20, 157, 230, *B_FREQ_RANGE, DEFAULT_B, "b  (y-frequency)", fmt="{:.0f}"),
+                Slider(20, 199, 230, *DELTA_RANGE, DEFAULT_DELTA, "delta  (phase, rad)", fmt="{:.2f}"),
+                Slider(20, 241, 230, *SPEED_RANGE, DEFAULT_SPEED, "speed", fmt="{:.2f}"),
+            ]
 
     def update(self, dt: float) -> None:
         speed = self.sliders[3].value
@@ -80,19 +77,19 @@ class LissajousScene(Scene):
 
         self.trail.blit(self.fade_overlay, (0, 0))
         if self.last_point is None:
-            pygame.draw.circle(self.trail, (255, 220, 90), (int(x), int(y)), 2)
+            pygame.draw.circle(self.trail, theme.CHALK_GOLD, (int(x), int(y)), 2)
         else:
-            pygame.draw.line(self.trail, (120, 200, 255), self.last_point, point, 2)
+            pygame.draw.line(self.trail, theme.CHALK_BLUE, self.last_point, point, 2)
         self.last_point = point
 
         surface.blit(self.trail, (0, 0))
-        pygame.draw.circle(surface, (255, 220, 90), (int(x), int(y)), 4)
+        pygame.draw.circle(surface, theme.CHALK_GOLD, (int(x), int(y)), 4)
 
-        surface.blit(self.panel_surface, (10, 40))
+        self.draw_panel_backing(surface)
         hud_lines = [
             f"a:b = {a}:{b}   delta = {delta:.2f} rad",
             f"x(t) = A sin({a}t + {delta:.2f})",
             f"y(t) = A sin({b}t)",
             f"t = {self.t:6.2f} s",
         ]
-        draw_hud(surface, self.font, hud_lines, (20, 260))
+        draw_hud(surface, self.font, hud_lines, (20, 320))

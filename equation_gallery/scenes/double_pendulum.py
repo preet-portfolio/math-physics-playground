@@ -37,6 +37,7 @@ import math
 
 import pygame
 
+from common import theme
 from common.scene import Scene
 from common.ui import Slider, draw_hud
 
@@ -61,8 +62,8 @@ TRAIL_FADE_ALPHA = 6  # alpha subtracted from the trail surface each frame
 THETA1_0 = math.radians(120.0)
 THETA2_0 = math.radians(-10.0)
 
-COLOR_A = (80, 200, 255)
-COLOR_B = (255, 150, 80)
+COLOR_A = theme.CHALK_BLUE
+COLOR_B = theme.CHALK_CORAL
 
 
 def derivatives(state, g):
@@ -121,12 +122,13 @@ class DoublePendulumScene(Scene):
     formula = "double pendulum (Lagrangian, chaotic)"
 
     def reset(self) -> None:
-        self.font = pygame.font.SysFont("menlo,consolas,monospace", 16)
-        self.sliders = [
-            Slider(20, 65, 230, *G_RANGE, DEFAULT_G, "g  gravity (m/s^2)", fmt="{:.2f}"),
-            Slider(20, 107, 230, *DELTA_THETA0_RANGE, DEFAULT_DELTA_THETA0, "delta_theta0 (rad)", fmt="{:.4f}"),
-            Slider(20, 149, 230, *TIME_SCALE_RANGE, DEFAULT_TIME_SCALE, "time_scale", fmt="{:.2f}"),
-        ]
+        self.font = theme.mono_font(16)
+        if not self.sliders:
+            self.sliders = [
+                Slider(20, 115, 230, *G_RANGE, DEFAULT_G, "g  gravity (m/s^2)", fmt="{:.2f}"),
+                Slider(20, 157, 230, *DELTA_THETA0_RANGE, DEFAULT_DELTA_THETA0, "delta_theta0 (rad)", fmt="{:.4f}"),
+                Slider(20, 199, 230, *TIME_SCALE_RANGE, DEFAULT_TIME_SCALE, "time_scale", fmt="{:.2f}"),
+            ]
 
         delta0 = self.sliders[1].value
         self.state_a = (THETA1_0, THETA2_0, 0.0, 0.0)
@@ -158,11 +160,6 @@ class DoublePendulumScene(Scene):
     def draw(self, surface: "pygame.Surface") -> None:
         pivot = (self.width * 0.62, self.height * 0.30)
 
-        # Small backing rect so the slider stack stays legible.
-        backing = pygame.Surface((250, 155), pygame.SRCALPHA)
-        backing.fill((10, 10, 12, 160))
-        surface.blit(backing, (10, 55))
-
         bob1_a, bob2_a = self._bob_positions(self.state_a, pivot)
         bob1_b, bob2_b = self._bob_positions(self.state_b, pivot)
 
@@ -191,7 +188,8 @@ class DoublePendulumScene(Scene):
             pygame.draw.circle(surface, color, (int(bob1[0]), int(bob1[1])), 8)
             pygame.draw.circle(surface, color, (int(bob2[0]), int(bob2[1])), 11)
 
-        pygame.draw.circle(surface, (150, 150, 150), (int(pivot[0]), int(pivot[1])), 4)
+        pygame.draw.circle(surface, theme.WOOD, (int(pivot[0]), int(pivot[1])), 4)
+        self.draw_panel_backing(surface)
 
         delta0 = self.sliders[1].value
         hud_lines = [

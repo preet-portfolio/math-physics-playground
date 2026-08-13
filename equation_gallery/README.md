@@ -1,8 +1,9 @@
 # Equation Gallery
 
-A menu-driven pygame app collecting 10 "greatest hits" interactive math and
-physics demos — five of each, each one built on a real equation rather than
-just a pretty animation.
+A pygame app collecting 10 "greatest hits" interactive math and physics
+demos — five of each, each one built on a real equation rather than just a
+pretty animation. Visual theme: **Chalkboard Lecture Hall** — every demo
+opens with its formula handwritten across the board.
 
 ## Run it
 
@@ -14,11 +15,15 @@ python -m equation_gallery.main
 
 ## Controls
 
-- **Menu:** press `1`-`5` for a math demo, `6`-`9` and `0` for a physics
-  demo (or click a row).
-- **In a scene:** drag the sliders to change parameters live. `R` resets the
-  scene to its initial conditions. `Esc` returns to the menu.
-- `Esc` at the menu (or closing the window) quits.
+- **Sidebar** (always visible, left side): click a row, or press `1`-`5` for
+  a math demo / `6`-`9` and `0` for a physics demo, to switch instantly — no
+  menu round-trip. Demo instances are cached, so switching back to one you've
+  already visited resumes exactly where it was (a running double-pendulum
+  trail, a Mandelbrot zoom, ...).
+- **In a scene:** drag the sliders to change parameters live — the handle
+  fills solid gold while held. `R` resets the current scene to its initial
+  conditions.
+- `Esc`, or closing the window, quits.
 
 ## The demos
 
@@ -72,12 +77,19 @@ python -m equation_gallery.main
 
 ## Files
 
-- `main.py` — the menu and game loop; dispatches events/update/draw to
-  whichever `Scene` is active.
+- `main.py` — the sidebar + game loop. Reaches the 1000x750 content area
+  scenes are built against via a pygame subsurface (`screen.subsurface`),
+  so scene code never has to know a sidebar exists; translates window-
+  absolute mouse coordinates to content-local ones before forwarding events
+  to the active scene.
 - `scenes/` — one file per demo, each a `common.scene.Scene` subclass owning
   its own sliders and its own numerical integration (no shared "physics
   engine" — the equations are all different shapes).
 - `../common/scene.py` — the `Scene` contract (`reset`/`handle_event`/
-  `update`/`draw`) every demo implements.
+  `update`/`draw`) every demo implements, plus `draw_panel_backing()`
+  (shared translucent panel behind each scene's sliders).
 - `../common/ui.py` — the shared `Slider` and `draw_hud` widgets, also used
   by `spiral_art_generator`.
+- `../common/theme.py` — the Chalkboard Lecture Hall palette, fonts
+  (Chalkduster for the big formula headline, Chalkboard SE for everything
+  else, both real macOS system fonts), and the chalk-dust texture.

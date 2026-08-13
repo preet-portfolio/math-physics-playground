@@ -24,6 +24,7 @@ from collections import deque
 
 import pygame
 
+from common import theme
 from common.scene import Scene
 from common.ui import Slider, draw_hud
 
@@ -50,10 +51,11 @@ class OrbitalMechanicsScene(Scene):
     formula = "a = -GM * r_hat / r^2"
 
     def reset(self) -> None:
-        self.font = pygame.font.SysFont("menlo,consolas,monospace", 16)
-        self.sliders = [
-            Slider(20, 65, 230, *V0_RANGE, DEFAULT_V0, "v0  tangential speed", fmt="{:.1f}"),
-        ]
+        self.font = theme.mono_font(16)
+        if not self.sliders:
+            self.sliders = [
+                Slider(20, 115, 230, *V0_RANGE, DEFAULT_V0, "v0  tangential speed", fmt="{:.1f}"),
+            ]
 
         self.x = R0
         self.y = 0.0
@@ -80,19 +82,15 @@ class OrbitalMechanicsScene(Scene):
     def draw(self, surface: "pygame.Surface") -> None:
         center = (self.width * 0.62, self.height * 0.5)
 
-        # Small backing rect so the slider stays legible.
-        backing = pygame.Surface((250, 70), pygame.SRCALPHA)
-        backing.fill((10, 10, 12, 160))
-        surface.blit(backing, (10, 55))
-
-        pygame.draw.circle(surface, (255, 220, 90), (int(center[0]), int(center[1])), 14)
+        pygame.draw.circle(surface, theme.CHALK_GOLD, (int(center[0]), int(center[1])), 14)
 
         if len(self.trail) >= 2:
             points = [(center[0] + px, center[1] + py) for px, py in self.trail]
-            pygame.draw.lines(surface, (120, 200, 255), False, points, 1)
+            pygame.draw.lines(surface, theme.CHALK_BLUE, False, points, 1)
 
         body_pos = (center[0] + self.x, center[1] + self.y)
-        pygame.draw.circle(surface, (255, 255, 255), (int(body_pos[0]), int(body_pos[1])), 8)
+        pygame.draw.circle(surface, theme.CHALK, (int(body_pos[0]), int(body_pos[1])), 8)
+        self.draw_panel_backing(surface)
 
         r = math.hypot(self.x, self.y)
         speed = math.hypot(self.vx, self.vy)

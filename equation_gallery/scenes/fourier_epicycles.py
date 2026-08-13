@@ -20,6 +20,7 @@ import math
 
 import pygame
 
+from common import theme
 from common.scene import Scene
 from common.ui import Slider, draw_hud
 
@@ -39,11 +40,12 @@ class FourierEpicyclesScene(Scene):
     def reset(self) -> None:
         self.t = 0.0
         self.history = collections.deque(maxlen=HISTORY_LEN)
-        self.font = pygame.font.SysFont("menlo,consolas,monospace", 16)
-        self.sliders = [
-            Slider(20, 65, 230, *N_RANGE, DEFAULT_N, "Lines  N (terms)", fmt="{:.0f}"),
-            Slider(20, 107, 230, *SPEED_RANGE, DEFAULT_SPEED, "Speed  omega (rad/s)", fmt="{:.2f}"),
-        ]
+        self.font = theme.mono_font(16)
+        if not self.sliders:
+            self.sliders = [
+                Slider(20, 115, 230, *N_RANGE, DEFAULT_N, "Lines  N (terms)", fmt="{:.0f}"),
+                Slider(20, 157, 230, *SPEED_RANGE, DEFAULT_SPEED, "Speed  omega (rad/s)", fmt="{:.2f}"),
+            ]
 
     def update(self, dt: float) -> None:
         speed = self.sliders[1].value
@@ -51,11 +53,6 @@ class FourierEpicyclesScene(Scene):
 
     def draw(self, surface: "pygame.Surface") -> None:
         n_terms = int(round(self.sliders[0].value))
-
-        # Small backing rect so the two sliders stay legible over the chain.
-        backing = pygame.Surface((250, 100), pygame.SRCALPHA)
-        backing.fill((10, 10, 12, 160))
-        surface.blit(backing, (10, 55))
 
         anchor = (self.width * 0.30, self.height * 0.55)
         pos = anchor
@@ -66,13 +63,13 @@ class FourierEpicyclesScene(Scene):
             angle = k * angle_base
             next_pos = (pos[0] + amplitude * math.cos(angle), pos[1] + amplitude * math.sin(angle))
 
-            pygame.draw.circle(surface, (70, 70, 78), (int(pos[0]), int(pos[1])), int(amplitude), 1)
-            pygame.draw.line(surface, (150, 200, 255), pos, next_pos, 2)
+            pygame.draw.circle(surface, theme.WOOD, (int(pos[0]), int(pos[1])), int(amplitude), 1)
+            pygame.draw.line(surface, theme.CHALK_BLUE, pos, next_pos, 2)
 
             pos = next_pos
 
         tip = pos
-        pygame.draw.circle(surface, (255, 220, 90), (int(tip[0]), int(tip[1])), 5)
+        pygame.draw.circle(surface, theme.CHALK_GOLD, (int(tip[0]), int(tip[1])), 5)
 
         # Plot region on the right: a horizontal guide from the tip to the
         # plot, then the scrolling history of the tip's height (relative to
@@ -82,8 +79,8 @@ class FourierEpicyclesScene(Scene):
         plot_width = plot_right - plot_left
         plot_center_y = anchor[1]
 
-        pygame.draw.line(surface, (120, 120, 120), (plot_left, tip[1]), (plot_right, tip[1]), 1)
-        pygame.draw.line(surface, (60, 60, 66), (plot_left, plot_center_y), (plot_right, plot_center_y), 1)
+        pygame.draw.line(surface, theme.WOOD, (plot_left, tip[1]), (plot_right, tip[1]), 1)
+        pygame.draw.line(surface, theme.WOOD, (plot_left, plot_center_y), (plot_right, plot_center_y), 1)
 
         self.history.appendleft(tip[1] - anchor[1])
         points = []
@@ -92,7 +89,9 @@ class FourierEpicyclesScene(Scene):
             y = plot_center_y + y_offset
             points.append((x, y))
         if len(points) >= 2:
-            pygame.draw.lines(surface, (255, 220, 90), False, points, 2)
+            pygame.draw.lines(surface, theme.CHALK_GOLD, False, points, 2)
+
+        self.draw_panel_backing(surface)
 
         hud_lines = [
             f"N = {n_terms} term(s) (k = 1..{2 * n_terms - 1})",

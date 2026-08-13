@@ -13,6 +13,7 @@ import math
 
 import pygame
 
+from common import theme
 from common.scene import Scene
 from common.ui import Slider, draw_hud
 
@@ -27,11 +28,12 @@ class EulerIdentityScene(Scene):
 
     def reset(self) -> None:
         self.theta = 0.0
-        self.font = pygame.font.SysFont("menlo,consolas,monospace", 16)
-        self.callout_font = pygame.font.SysFont("menlo,consolas,monospace", 22, bold=True)
-        self.sliders = [
-            Slider(20, 80, 240, *SPEED_RANGE, DEFAULT_SPEED, "Speed  omega (rad/s)", fmt="{:.2f}"),
-        ]
+        self.font = theme.mono_font(16)
+        self.callout_font = theme.chalk_font(22, bold=True)
+        if not self.sliders:
+            self.sliders = [
+                Slider(20, 115, 230, *SPEED_RANGE, DEFAULT_SPEED, "Speed  omega (rad/s)", fmt="{:.2f}"),
+            ]
 
     def update(self, dt: float) -> None:
         omega = self.sliders[0].value
@@ -41,24 +43,24 @@ class EulerIdentityScene(Scene):
         cx, cy = self.width * 0.32, self.height * 0.55
         radius = min(self.width, self.height) * 0.28
 
-        pygame.draw.circle(surface, (60, 60, 66), (int(cx), int(cy)), int(radius), 1)
-        pygame.draw.line(surface, (90, 90, 96), (cx - radius - 20, cy), (cx + radius + 20, cy), 1)
-        pygame.draw.line(surface, (90, 90, 96), (cx, cy - radius - 20), (cx, cy + radius + 20), 1)
+        pygame.draw.circle(surface, theme.WOOD, (int(cx), int(cy)), int(radius), 1)
+        pygame.draw.line(surface, theme.WOOD, (cx - radius - 20, cy), (cx + radius + 20, cy), 1)
+        pygame.draw.line(surface, theme.WOOD, (cx, cy - radius - 20), (cx, cy + radius + 20), 1)
 
         x = math.cos(self.theta) * radius
         y = math.sin(self.theta) * radius
         tip = (cx + x, cy - y)  # screen y grows downward; flip so +y is "up" like standard math
 
-        pygame.draw.line(surface, (255, 255, 255), (cx, cy), tip, 2)
-        pygame.draw.circle(surface, (255, 220, 90), (int(tip[0]), int(tip[1])), 6)
+        pygame.draw.line(surface, theme.CHALK, (cx, cy), tip, 2)
+        pygame.draw.circle(surface, theme.CHALK_GOLD, (int(tip[0]), int(tip[1])), 6)
 
-        pygame.draw.line(surface, (120, 200, 255), tip, (cx, cy - y), 1)  # projection onto y-axis (sin)
-        pygame.draw.line(surface, (255, 150, 150), tip, (cx + x, cy), 1)  # projection onto x-axis (cos)
+        pygame.draw.line(surface, theme.CHALK_BLUE, tip, (cx, cy - y), 1)  # projection onto y-axis (sin)
+        pygame.draw.line(surface, theme.CHALK_CORAL, tip, (cx + x, cy), 1)  # projection onto x-axis (cos)
 
         theta_mod = self.theta % (2 * math.pi)
         near_pi = min(abs(theta_mod - math.pi), abs(theta_mod - math.pi - 2 * math.pi))
         if near_pi < 0.03:
-            callout = self.callout_font.render("e^(i*pi) + 1 = 0", True, (255, 220, 90))
+            callout = self.callout_font.render("e^(i*pi) + 1 = 0", True, theme.CHALK_CORAL)
             surface.blit(callout, (self.width * 0.55, self.height * 0.3))
 
         cos_v, sin_v = math.cos(self.theta), math.sin(self.theta)
@@ -67,3 +69,4 @@ class EulerIdentityScene(Scene):
             f"e^(i*theta) = {cos_v:+.3f} {'+' if sin_v >= 0 else '-'} {abs(sin_v):.3f}i",
         ]
         draw_hud(surface, self.font, hud_lines, (self.width * 0.55, self.height * 0.55))
+        self.draw_panel_backing(surface)

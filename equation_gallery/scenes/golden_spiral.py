@@ -19,13 +19,14 @@ import math
 
 import pygame
 
+from common import theme
 from common.scene import Scene
 from common.ui import Slider, draw_hud
 
 PHI = (1 + 5 ** 0.5) / 2
 GROWTH_RANGE = (1.0, 2.5)
-SQUARE_COLOR = (70, 70, 80)
-SPIRAL_COLOR = (255, 200, 90)
+SQUARE_COLOR = theme.WOOD
+SPIRAL_COLOR = theme.CHALK_GOLD
 GOLDEN_CALLOUT_TOL = 0.01
 SPIRAL_TURNS = 4 * math.pi  # two full turns
 SPIRAL_STEPS = 200
@@ -38,10 +39,11 @@ class GoldenSpiralScene(Scene):
     formula = "r(theta) = r0 * growth^(2*theta/pi)"
 
     def reset(self) -> None:
-        self.font = pygame.font.SysFont("menlo,consolas,monospace", 16)
-        self.sliders = [
-            Slider(20, 65, 230, *GROWTH_RANGE, PHI, "growth  (x per 1/4 turn)", fmt="{:.3f}"),
-        ]
+        self.font = theme.mono_font(16)
+        if not self.sliders:
+            self.sliders = [
+                Slider(20, 115, 230, *GROWTH_RANGE, PHI, "growth  (x per 1/4 turn)", fmt="{:.3f}"),
+            ]
 
         # Fixed Fibonacci square tiling (not slider-controlled -- see module docstring).
         fib = [1, 1]
@@ -79,11 +81,6 @@ class GoldenSpiralScene(Scene):
         self.origin_x = self.width * 0.40 - (left + bbox_w / 2) * self.px_scale
         self.origin_y = self.height * 0.5 - (top + bbox_h / 2) * self.px_scale
 
-        panel_size = (260, 55)
-        self.panel_surface = pygame.Surface(panel_size)
-        self.panel_surface.set_alpha(180)
-        self.panel_surface.fill((20, 20, 24))
-
     def update(self, dt: float) -> None:
         pass  # static tiling + spiral are recomputed from the slider each draw() call
 
@@ -116,8 +113,8 @@ class GoldenSpiralScene(Scene):
         if len(points) >= 2:
             pygame.draw.lines(surface, SPIRAL_COLOR, False, points, 2)
 
-        surface.blit(self.panel_surface, (10, 40))
+        self.draw_panel_backing(surface)
         hud_lines = [f"growth = {growth:.3f}   b = growth^(2/pi) = {b:.3f}"]
-        if abs(growth - PHI) < GOLDEN_CALLOUT_TOL:
-            hud_lines.append("== golden ratio (phi)!")
         draw_hud(surface, self.font, hud_lines, (20, 700))
+        if abs(growth - PHI) < GOLDEN_CALLOUT_TOL:
+            draw_hud(surface, self.font, ["== golden ratio (phi)!"], (20, 724), color=theme.CHALK_CORAL)

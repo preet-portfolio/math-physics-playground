@@ -19,6 +19,7 @@ import math
 
 import pygame
 
+from common import theme
 from common.scene import Scene
 from common.ui import Slider, draw_hud
 
@@ -46,12 +47,12 @@ class SimplePendulumScene(Scene):
         # it set to -- rebuilding the sliders here would snap it back to its
         # default every time.
         if not self.sliders:
-            self.font = pygame.font.SysFont("menlo,consolas,monospace", 16)
+            self.font = theme.mono_font(16)
             self.sliders = [
-                Slider(20, 65, 230, *L_RANGE, DEFAULT_L, "L  length (m)", fmt="{:.2f}"),
-                Slider(20, 107, 230, *G_RANGE, DEFAULT_G, "g  gravity (m/s^2)", fmt="{:.2f}"),
-                Slider(20, 149, 230, *DAMPING_RANGE, DEFAULT_DAMPING, "b  damping", fmt="{:.2f}"),
-                Slider(20, 191, 230, *THETA0_RANGE, DEFAULT_THETA0_DEG, "theta0 (deg)", fmt="{:.0f}"),
+                Slider(20, 115, 230, *L_RANGE, DEFAULT_L, "L  length (m)", fmt="{:.2f}"),
+                Slider(20, 157, 230, *G_RANGE, DEFAULT_G, "g  gravity (m/s^2)", fmt="{:.2f}"),
+                Slider(20, 199, 230, *DAMPING_RANGE, DEFAULT_DAMPING, "b  damping", fmt="{:.2f}"),
+                Slider(20, 241, 230, *THETA0_RANGE, DEFAULT_THETA0_DEG, "theta0 (deg)", fmt="{:.0f}"),
             ]
         self.theta = math.radians(self.sliders[3].value)
         self.omega = 0.0
@@ -71,11 +72,6 @@ class SimplePendulumScene(Scene):
         L = self.sliders[0].value
         g = self.sliders[1].value
 
-        # Small backing rect so the slider stack stays legible.
-        backing = pygame.Surface((250, 195), pygame.SRCALPHA)
-        backing.fill((10, 10, 12, 160))
-        surface.blit(backing, (10, 55))
-
         pivot = (self.width * 0.6, self.height * 0.25)
         rod_len = L * PX_PER_LENGTH
         bob = (
@@ -83,9 +79,10 @@ class SimplePendulumScene(Scene):
             pivot[1] + rod_len * math.cos(self.theta),
         )
 
-        pygame.draw.line(surface, (200, 200, 200), pivot, bob, 2)
-        pygame.draw.circle(surface, (255, 220, 90), (int(bob[0]), int(bob[1])), 14)
-        pygame.draw.circle(surface, (150, 150, 150), (int(pivot[0]), int(pivot[1])), 4)
+        pygame.draw.line(surface, theme.CHALK, pivot, bob, 2)
+        pygame.draw.circle(surface, theme.CHALK_GOLD, (int(bob[0]), int(bob[1])), 14)
+        pygame.draw.circle(surface, theme.WOOD, (int(pivot[0]), int(pivot[1])), 4)
+        self.draw_panel_backing(surface)
 
         t_small = 2 * math.pi * math.sqrt(L / g)
         hud_lines = [

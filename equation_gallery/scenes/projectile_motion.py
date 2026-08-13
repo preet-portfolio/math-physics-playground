@@ -22,6 +22,7 @@ import math
 
 import pygame
 
+from common import theme
 from common.scene import Scene
 from common.ui import Slider, draw_hud
 
@@ -49,12 +50,12 @@ class ProjectileMotionScene(Scene):
         # -- rebuilding the sliders here would snap them back to defaults
         # every time.
         if not self.sliders:
-            self.font = pygame.font.SysFont("menlo,consolas,monospace", 16)
+            self.font = theme.mono_font(16)
             self.sliders = [
-                Slider(20, 65, 230, *ANGLE_RANGE, DEFAULT_ANGLE_DEG, "angle (deg)", fmt="{:.0f}"),
-                Slider(20, 107, 230, *V0_RANGE, DEFAULT_V0, "v0  launch speed", fmt="{:.1f}"),
-                Slider(20, 149, 230, *G_RANGE, DEFAULT_G, "g  gravity (m/s^2)", fmt="{:.2f}"),
-                Slider(20, 191, 230, *DRAG_RANGE, DEFAULT_DRAG, "drag coeff", fmt="{:.3f}"),
+                Slider(20, 115, 230, *ANGLE_RANGE, DEFAULT_ANGLE_DEG, "angle (deg)", fmt="{:.0f}"),
+                Slider(20, 157, 230, *V0_RANGE, DEFAULT_V0, "v0  launch speed", fmt="{:.1f}"),
+                Slider(20, 199, 230, *G_RANGE, DEFAULT_G, "g  gravity (m/s^2)", fmt="{:.2f}"),
+                Slider(20, 241, 230, *DRAG_RANGE, DEFAULT_DRAG, "drag coeff", fmt="{:.3f}"),
             ]
         angle = math.radians(self.sliders[0].value)
         v0 = self.sliders[1].value
@@ -119,39 +120,36 @@ class ProjectileMotionScene(Scene):
         g = self.sliders[2].value
         drag = self.sliders[3].value
 
-        # Small backing rect so the slider stack stays legible.
-        backing = pygame.Surface((250, 195), pygame.SRCALPHA)
-        backing.fill((10, 10, 12, 160))
-        surface.blit(backing, (10, 55))
-
         origin = (self.width * 0.08, self.height * 0.75)
 
-        pygame.draw.line(surface, (90, 90, 96), (0, origin[1]), (self.width, origin[1]), 1)
+        pygame.draw.line(surface, theme.WOOD, (0, origin[1]), (self.width, origin[1]), 1)
 
         if len(self.trajectory) >= 2:
             points = [
                 (origin[0] + px * PX_PER_METER, origin[1] - py * PX_PER_METER)
                 for px, py in self.trajectory
             ]
-            pygame.draw.lines(surface, (150, 220, 255), False, points, 2)
+            pygame.draw.lines(surface, theme.CHALK_BLUE, False, points, 2)
 
         # Current/final position marker.
         cur_x = origin[0] + self.x * PX_PER_METER
         cur_y = origin[1] - self.y * PX_PER_METER
-        pygame.draw.circle(surface, (255, 220, 90), (int(cur_x), int(cur_y)), 6)
+        pygame.draw.circle(surface, theme.CHALK_GOLD, (int(cur_x), int(cur_y)), 6)
 
         if self.landed and self.landed_x is not None:
             land_x = origin[0] + self.landed_x * PX_PER_METER
             land_y = origin[1]
             size = 7
             pygame.draw.line(
-                surface, (255, 120, 120),
+                surface, theme.CHALK_CORAL,
                 (land_x - size, land_y - size), (land_x + size, land_y + size), 2,
             )
             pygame.draw.line(
-                surface, (255, 120, 120),
+                surface, theme.CHALK_CORAL,
                 (land_x - size, land_y + size), (land_x + size, land_y - size), 2,
             )
+
+        self.draw_panel_backing(surface)
 
         r_analytic = v0 ** 2 * math.sin(2 * math.radians(angle_deg)) / g
         hud_lines = [

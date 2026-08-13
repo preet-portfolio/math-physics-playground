@@ -13,6 +13,7 @@ import math
 
 import pygame
 
+from common import theme
 from common.scene import Scene
 from common.ui import Slider, draw_hud
 
@@ -41,12 +42,12 @@ class SpringMassScene(Scene):
         # it set to -- rebuilding the sliders here would snap it back to its
         # default every time.
         if not self.sliders:
-            self.font = pygame.font.SysFont("menlo,consolas,monospace", 16)
+            self.font = theme.mono_font(16)
             self.sliders = [
-                Slider(20, 65, 230, *K_RANGE, DEFAULT_K, "k  spring const", fmt="{:.1f}"),
-                Slider(20, 107, 230, *M_RANGE, DEFAULT_M, "m  mass", fmt="{:.2f}"),
-                Slider(20, 149, 230, *DAMPING_RANGE, DEFAULT_DAMPING, "c  damping", fmt="{:.2f}"),
-                Slider(20, 191, 230, *X0_RANGE, DEFAULT_X0, "x0  initial displacement", fmt="{:.2f}"),
+                Slider(20, 115, 230, *K_RANGE, DEFAULT_K, "k  spring const", fmt="{:.1f}"),
+                Slider(20, 157, 230, *M_RANGE, DEFAULT_M, "m  mass", fmt="{:.2f}"),
+                Slider(20, 199, 230, *DAMPING_RANGE, DEFAULT_DAMPING, "c  damping", fmt="{:.2f}"),
+                Slider(20, 241, 230, *X0_RANGE, DEFAULT_X0, "x0  initial displacement", fmt="{:.2f}"),
             ]
         self.x = self.sliders[3].value
         self.v = 0.0
@@ -71,17 +72,12 @@ class SpringMassScene(Scene):
         m = self.sliders[1].value
         damping = self.sliders[2].value
 
-        # Small backing rect so the slider stack stays legible.
-        backing = pygame.Surface((250, 195), pygame.SRCALPHA)
-        backing.fill((10, 10, 12, 160))
-        surface.blit(backing, (10, 55))
-
         anchor = (self.width * 0.4, self.height * 0.4)
         block_x = anchor[0] + EQUILIBRIUM_OFFSET + self.x * PX_PER_UNIT
         block_y = anchor[1]
 
         # Wall hatch.
-        pygame.draw.line(surface, (150, 150, 150), (anchor[0], anchor[1] - 40), (anchor[0], anchor[1] + 40), 4)
+        pygame.draw.line(surface, theme.WOOD, (anchor[0], anchor[1] - 40), (anchor[0], anchor[1] + 40), 4)
 
         # Zigzag spring from wall to block.
         segments = 7
@@ -92,11 +88,11 @@ class SpringMassScene(Scene):
             zig_y = block_y + (18 if i % 2 == 0 else -18)
             points.append((zig_x, zig_y))
         points.append((block_x, block_y))
-        pygame.draw.lines(surface, (200, 200, 200), False, points, 2)
+        pygame.draw.lines(surface, theme.CHALK, False, points, 2)
 
         block_rect = pygame.Rect(0, 0, 40, 40)
         block_rect.center = (int(block_x), int(block_y))
-        pygame.draw.rect(surface, (255, 220, 90), block_rect)
+        pygame.draw.rect(surface, theme.CHALK_GOLD, block_rect)
 
         # Energy bar meters.
         ke = 0.5 * m * self.v ** 2
@@ -112,13 +108,15 @@ class SpringMassScene(Scene):
         ke_h = min(1.0, ke / max_energy) * bar_max_h
         pe_h = min(1.0, pe / max_energy) * bar_max_h
 
-        pygame.draw.rect(surface, (60, 60, 66), (ke_x, bar_bottom - bar_max_h, bar_w, bar_max_h), 1)
-        pygame.draw.rect(surface, (60, 60, 66), (pe_x, bar_bottom - bar_max_h, bar_w, bar_max_h), 1)
-        pygame.draw.rect(surface, (150, 220, 255), (ke_x, bar_bottom - ke_h, bar_w, ke_h))
-        pygame.draw.rect(surface, (255, 150, 150), (pe_x, bar_bottom - pe_h, bar_w, pe_h))
+        pygame.draw.rect(surface, theme.WOOD, (ke_x, bar_bottom - bar_max_h, bar_w, bar_max_h), 1)
+        pygame.draw.rect(surface, theme.WOOD, (pe_x, bar_bottom - bar_max_h, bar_w, bar_max_h), 1)
+        pygame.draw.rect(surface, theme.CHALK_BLUE, (ke_x, bar_bottom - ke_h, bar_w, ke_h))
+        pygame.draw.rect(surface, theme.CHALK_CORAL, (pe_x, bar_bottom - pe_h, bar_w, pe_h))
 
-        ke_label = self.font.render("KE", True, (150, 220, 255))
-        pe_label = self.font.render("PE", True, (255, 150, 150))
+        self.draw_panel_backing(surface)
+
+        ke_label = self.font.render("KE", True, theme.CHALK_BLUE)
+        pe_label = self.font.render("PE", True, theme.CHALK_CORAL)
         surface.blit(ke_label, (ke_x + bar_w / 2 - ke_label.get_width() / 2, bar_bottom + 4))
         surface.blit(pe_label, (pe_x + bar_w / 2 - pe_label.get_width() / 2, bar_bottom + 4))
 

@@ -10,6 +10,7 @@ from __future__ import annotations
 import numpy as np
 import pygame
 
+from common import theme
 from common.scene import Scene
 from common.ui import Slider, draw_hud
 
@@ -50,7 +51,7 @@ def _colorize(iterations, max_iter):
     g = (np.sin(t * 6.0 + 2.0) * 0.5 + 0.5) * 255
     b = (np.sin(t * 6.0 + 4.0) * 0.5 + 0.5) * 255
     rgb = np.stack([r, g, b], axis=-1).astype(np.uint8)
-    rgb[inside] = [5, 5, 10]
+    rgb[inside] = theme.BOARD  # ties the fractal's interior back to the board color
     return rgb
 
 
@@ -62,11 +63,12 @@ class MandelbrotScene(Scene):
     def reset(self) -> None:
         self.cx = DEFAULT_CX
         self.cy = DEFAULT_CY
-        self.font = pygame.font.SysFont("menlo,consolas,monospace", 16)
-        self.sliders = [
-            Slider(20, 65, 230, *MAX_ITER_RANGE, DEFAULT_MAX_ITER, "Detail  max_iter", fmt="{:.0f}"),
-            Slider(20, 107, 230, *ZOOM_RANGE, DEFAULT_ZOOM, "Zoom", fmt="{:.0f}"),
-        ]
+        self.font = theme.mono_font(16)
+        if not self.sliders:
+            self.sliders = [
+                Slider(20, 115, 230, *MAX_ITER_RANGE, DEFAULT_MAX_ITER, "Detail  max_iter", fmt="{:.0f}"),
+                Slider(20, 157, 230, *ZOOM_RANGE, DEFAULT_ZOOM, "Zoom", fmt="{:.0f}"),
+            ]
         self._cache_key = None
         self._cache_surface = None
 
@@ -74,7 +76,7 @@ class MandelbrotScene(Scene):
         for slider in self.sliders:
             slider.handle_event(event)
 
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and event.pos[1] > 160:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and event.pos[1] > 210:
             zoom = self.sliders[1].value
             span = BASE_SPAN / zoom
             new_cx = self.cx + (event.pos[0] / self.width - 0.5) * 2 * span
@@ -112,9 +114,14 @@ class MandelbrotScene(Scene):
         if self._cache_surface is not None:
             surface.blit(self._cache_surface, (0, 0))
 
+        # Unlike every other scene, the background here is the fractal
+        # itself (not plain dark), so the slider labels need a backing panel
+        # behind them to stay legible against busy fractal colors.
+        self.draw_panel_backing(surface)
+
         hud_lines = [
             f"center = ({self.cx:+.5f}, {self.cy:+.5f})",
             f"span = {span:.5f}   max_iter = {max_iter}",
             "click the fractal to recenter",
         ]
-        draw_hud(surface, self.font, hud_lines, (self.width * 0.55, 60))
+        draw_hud(surface, self.font, hud_lines, (self.width * 0.55, 115))

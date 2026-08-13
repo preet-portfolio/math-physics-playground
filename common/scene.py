@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import pygame
 
+from . import theme
+
 
 class Scene:
     title: str = "Untitled"
@@ -35,6 +37,19 @@ class Scene:
     def draw(self, surface: "pygame.Surface") -> None:
         """Render current simulation state (not sliders/HUD)."""
 
-    def draw_sliders(self, surface: "pygame.Surface", font) -> None:
+    def draw_sliders(self, surface: "pygame.Surface") -> None:
         for slider in self.sliders:
-            slider.draw(surface, font)
+            slider.draw(surface)
+
+    def draw_panel_backing(self, surface: "pygame.Surface") -> None:
+        """A translucent chalkboard-dark panel sized to fit self.sliders,
+        drawn behind them so labels stay legible over busy scene content.
+        Every scene in this batch used to hand-roll this same block; call
+        this instead. No-op if the scene has no sliders.
+        """
+        if not self.sliders:
+            return
+        panel_height = 40 + 42 * len(self.sliders)
+        panel = pygame.Surface((260, panel_height), pygame.SRCALPHA)
+        panel.fill((*theme.BOARD_DARK, 175))
+        surface.blit(panel, (10, 55))
