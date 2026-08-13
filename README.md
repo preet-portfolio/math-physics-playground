@@ -22,8 +22,8 @@ installing anything.
   handwritten across the board.
 - **[web/](web/)** (Next.js + TypeScript + Canvas) — a browser port of all
   11 demos above (the 10-demo gallery + the spiral generator), reimplementing
-  the exact same verified equations/integration methods for the web —
-  deployed so anyone can play with them without installing Python.
+  the exact same verified equations/integration methods for the web.
+  **Live: [web-indol-delta-80.vercel.app](https://web-indol-delta-80.vercel.app)**
 
 ## Setup
 
