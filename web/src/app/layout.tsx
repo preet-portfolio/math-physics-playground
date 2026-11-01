@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${kalam.variable} ${jetbrainsMono.variable} h-full antialiased`}>
-      <body className="flex min-h-full bg-[#1B2B22] text-[#EDEAE0]">
+      <body className="flex min-h-full flex-col bg-[#1B2B22] text-[#EDEAE0] md:flex-row">
         <Nav />
         <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
       </body>

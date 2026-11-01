@@ -91,8 +91,9 @@ export default function MandelbrotDemo() {
 
   function handleClick(e: MouseEvent<HTMLCanvasElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
-    const px = e.clientX - rect.left;
-    const py = e.clientY - rect.top;
+    // On narrow screens the canvas is shown smaller than WIDTH x HEIGHT.
+    const px = ((e.clientX - rect.left) * WIDTH) / rect.width;
+    const py = ((e.clientY - rect.top) * HEIGHT) / rect.height;
     const span = 1.6 / zoom;
     const spanY = (span * HEIGHT) / WIDTH;
     setCx(cx - span + (2 * span * px) / WIDTH);
