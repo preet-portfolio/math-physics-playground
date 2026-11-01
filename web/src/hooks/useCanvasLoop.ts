@@ -32,8 +32,11 @@ export function useCanvasLoop(draw: DrawFn, width: number, height: number) {
     const dpr = window.devicePixelRatio || 1;
     canvas.width = width * dpr;
     canvas.height = height * dpr;
+    // Full size where there's room; on narrower screens the canvas shrinks to
+    // fit and keeps its shape, while drawing still happens in width x height.
     canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
+    canvas.style.maxWidth = '100%';
+    canvas.style.aspectRatio = `${width} / ${height}`;
     ctx.scale(dpr, dpr);
 
     let rafId = 0;
